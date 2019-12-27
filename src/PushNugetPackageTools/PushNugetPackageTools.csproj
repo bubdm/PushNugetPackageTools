@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <ApplicationIcon>icon.ico</ApplicationIcon>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Lanymy.Common" Version="0.4.3" />
+    <PackageReference Include="Lanymy.Common.Console" Version="0.1.2" />
+    <!--<PackageReference Include="NuGet.Credentials" Version="5.4.0-xprivate.60013" />
+    <PackageReference Include="NuGet.PackageManagement" Version="5.4.0-xprivate.60013" />
+    <PackageReference Include="NuGet.Packaging" Version="5.4.0-xprivate.60013" />
+    <PackageReference Include="NuGet.Protocol" Version="5.4.0-xprivate.60013" />-->
+    <PackageReference Include="NuGet.Packaging" Version="5.3.0" />
+    <PackageReference Include="NuGet.Protocol" Version="5.3.0" />
+    <!--<PackageReference Include="WindowsAPICodePack-Shell" Version="1.1.1" />-->
+  </ItemGroup>
+
+</Project>
