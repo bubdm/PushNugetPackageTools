@@ -9,22 +9,45 @@ using NuGet.Versioning;
 namespace PushNugetPackageTools.Models
 {
 
+    /// <summary>
+    /// Nuget 包 元数据信息 实体类
+    /// </summary>
     public class NugetPackageMetadataInfoModel
     {
-
+        /// <summary>
+        /// 包 全路径
+        /// </summary>
         public string NugetPackageFileFullPath { get; }
+        /// <summary>
+        /// 包 全名称
+        /// </summary>
         public string NugetPackageFileFullName { get; }
 
+        /// <summary>
+        /// 包 ID
+        /// </summary>
         public string ID { get; private set; }
 
-
+        /// <summary>
+        /// 版本号
+        /// </summary>
         public NuGetVersion Version { get; private set; }
 
+        /// <summary>
+        /// 标题
+        /// </summary>
         public string Title { get; private set; }
 
+        /// <summary>
+        /// 作者信息
+        /// </summary>
         public IEnumerable<string> Authors { get; private set; }
 
+        /// <summary>
+        /// 拥有者 信息
+        /// </summary>
         public IEnumerable<string> Owners { get; private set; }
+
 
         public string Icon { get; private set; }
 
@@ -71,6 +94,10 @@ namespace PushNugetPackageTools.Models
         public IEnumerable<FrameworkReferenceGroup> FrameworkReferenceGroups { get; private set; }
 
 
+        /// <summary>
+        /// Nuget 包 元数据信息 实体类 构造方法
+        /// </summary>
+        /// <param name="nugetPackageFileFullPath">包 全路径</param>
         public NugetPackageMetadataInfoModel(string nugetPackageFileFullPath)
         {
 
@@ -81,6 +108,9 @@ namespace PushNugetPackageTools.Models
 
         }
 
+        /// <summary>
+        /// 读取 包 元数据
+        /// </summary>
         private void AnalysisManifest()
         {
             //using var stream = _streamFactory();

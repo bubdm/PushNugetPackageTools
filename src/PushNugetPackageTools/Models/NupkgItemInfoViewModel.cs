@@ -9,13 +9,20 @@ using PushNugetPackageTools.Annotations;
 namespace PushNugetPackageTools.Models
 {
 
-    public class NupkgItemInfoModel //: INotifyPropertyChanged
+
+    public class NupkgItemInfoViewModel //: INotifyPropertyChanged
     {
 
         public string ID { get; set; }
         public string FileFullName { get; set; }
         public string FileFullPath { get; set; }
+        /// <summary>
+        /// 本地包 版本号
+        /// </summary>
         public NuGetVersion Version { get; set; } = new NuGetVersion("0");
+        /// <summary>
+        /// 远程服务器端 版本号
+        /// </summary>
         public NuGetVersion RemoteVersion { get; set; } = new NuGetVersion("0");
 
         public string DisplayTitle

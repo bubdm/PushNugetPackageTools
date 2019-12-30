@@ -36,7 +36,7 @@ namespace PushNugetPackageTools
 
         private NupkgsInfoModel _CurrentNupkgsInfoModel;
         private readonly ObservableCollection<string> _NupkgFullPathSourceList = new ObservableCollection<string>();
-        private readonly ObservableCollection<NupkgItemInfoModel> _NupkgsSourceList = new ObservableCollection<NupkgItemInfoModel>();
+        private readonly ObservableCollection<NupkgItemInfoViewModel> _NupkgsSourceList = new ObservableCollection<NupkgItemInfoViewModel>();
 
 
         public MainWindow()
@@ -182,7 +182,7 @@ namespace PushNugetPackageTools
             foreach (var addedItem in e.AddedItems)
             {
 
-                var nupkgItemInfoModel = addedItem as NupkgItemInfoModel;
+                var nupkgItemInfoModel = addedItem as NupkgItemInfoViewModel;
                 if (!nupkgItemInfoModel.IsEnable)
                 {
                     lbxNupkgs.SelectedItems.Remove(nupkgItemInfoModel);
@@ -243,7 +243,7 @@ namespace PushNugetPackageTools
                     var remoteVersion = remoteNugetPackageMetadata.IfIsNullOrEmpty() ? new NuGetVersion("0") : remoteNugetPackageMetadata.Identity.Version;
 
 
-                    var nupkgItemInfoModel = new NupkgItemInfoModel
+                    var nupkgItemInfoModel = new NupkgItemInfoViewModel
                     {
                         ID = nugetPackageMetadataInfoModel.ID,
                         FileFullName = nugetPackageMetadataInfoModel.NugetPackageFileFullName,
@@ -299,7 +299,7 @@ namespace PushNugetPackageTools
             foreach (var lbxNupkgsSelectedItem in lbxNupkgs.SelectedItems)
             {
 
-                var nupkgItemInfoModel = lbxNupkgsSelectedItem as NupkgItemInfoModel;
+                var nupkgItemInfoModel = lbxNupkgsSelectedItem as NupkgItemInfoViewModel;
 
                 if (nupkgItemInfoModel.IsEnable)
                 {
