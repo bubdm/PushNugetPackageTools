@@ -102,7 +102,10 @@ namespace PushNugetPackageTools
             lbxNupkgs.ItemsSource = _NupkgsSourceList;
             lbxNupkgs.DisplayMemberPath = "DisplayTitle";
 
-            _CurrentNuGetServerManipulater = new NuGetServerManipulater(_CurrentNupkgsInfoModel.NupkgPublishKey, _CurrentNupkgsInfoModel.NugetServerUrl);
+            if (!_CurrentNupkgsInfoModel.NugetServerUrl.IfIsNullOrEmpty())
+            {
+                _CurrentNuGetServerManipulater = new NuGetServerManipulater(_CurrentNupkgsInfoModel.NupkgPublishKey, _CurrentNupkgsInfoModel.NugetServerUrl);
+            }
 
         }
 
