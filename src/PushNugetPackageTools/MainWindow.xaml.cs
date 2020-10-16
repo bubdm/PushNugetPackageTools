@@ -38,6 +38,10 @@ namespace PushNugetPackageTools
         private readonly ObservableCollection<string> _NupkgFullPathSourceList = new ObservableCollection<string>();
         private readonly ObservableCollection<NupkgItemInfoViewModel> _NupkgsSourceList = new ObservableCollection<NupkgItemInfoViewModel>();
 
+        private string _NupkgPublishKeyTemp;
+        private string _NugetServerUrlTemp;
+
+        private NuGetServerManipulater _CurrentNuGetServerManipulater;
 
         public MainWindow()
         {
@@ -77,10 +81,17 @@ namespace PushNugetPackageTools
 
                 }
 
+                if (!_CurrentNupkgsInfoModel.NugetServerUrl.IfIsNullOrEmpty())
+                {
+                    tbxNugetServerUrl.Text = _CurrentNupkgsInfoModel.NugetServerUrl;
+                }
+
                 if (!_CurrentNupkgsInfoModel.NupkgPublishKey.IfIsNullOrEmpty())
                 {
                     tbxNupkgKey.Text = _CurrentNupkgsInfoModel.NupkgPublishKey;
                 }
+
+
 
             }
 
@@ -91,7 +102,50 @@ namespace PushNugetPackageTools
             lbxNupkgs.ItemsSource = _NupkgsSourceList;
             lbxNupkgs.DisplayMemberPath = "DisplayTitle";
 
+            _CurrentNuGetServerManipulater = new NuGetServerManipulater(_CurrentNupkgsInfoModel.NupkgPublishKey, _CurrentNupkgsInfoModel.NugetServerUrl);
+
         }
+
+        private void SetNuGetConfigControlsIsEnabledStatus(bool isSettings)
+        {
+            tbxNugetServerUrl.IsEnabled = isSettings;
+            tbxNupkgKey.IsEnabled = isSettings;
+            btnSetNuGetConfig.IsEnabled = !isSettings;
+            btnSaveNuGetConfig.IsEnabled = isSettings;
+            btnCancelNuGetConfig.IsEnabled = isSettings;
+        }
+
+        private void BtnSetNuGetConfig_OnClick(object sender, RoutedEventArgs e)
+        {
+
+            SetNuGetConfigControlsIsEnabledStatus(true);
+
+            _NugetServerUrlTemp = tbxNugetServerUrl.Text.Trim();
+            _NupkgPublishKeyTemp = tbxNupkgKey.Text.Trim();
+
+        }
+
+        private void BtnSaveNuGetConfig_OnClick(object sender, RoutedEventArgs e)
+        {
+
+            SetNuGetConfigControlsIsEnabledStatus(false);
+
+            _CurrentNupkgsInfoModel.NugetServerUrl = tbxNugetServerUrl.Text.Trim();
+            _CurrentNupkgsInfoModel.NupkgPublishKey = tbxNupkgKey.Text.Trim();
+
+            _CurrentNuGetServerManipulater = new NuGetServerManipulater(_CurrentNupkgsInfoModel.NupkgPublishKey, _CurrentNupkgsInfoModel.NugetServerUrl);
+
+        }
+
+        private void BtnCancelNuGetConfig_OnClick(object sender, RoutedEventArgs e)
+        {
+            SetNuGetConfigControlsIsEnabledStatus(false);
+            tbxNugetServerUrl.Text = _NugetServerUrlTemp;
+            tbxNupkgKey.Text = _NupkgPublishKeyTemp;
+        }
+
+
+
 
         private void btnNupkgFullPath_Click(object sender, RoutedEventArgs e)
         {
@@ -196,92 +250,102 @@ namespace PushNugetPackageTools
         private async void btnRefreshNupkgs_Click(object sender, RoutedEventArgs e)
         {
 
-            //var nupkgItemInfoModelA = new NupkgItemInfoModel
-            //{
-            //    ID = "Lanymy.Common",
-            //    FileFullName = "Lanymy.Common.0.2.1.nupkg",
-            //    FileFullPath = "Lanymy.Common.0.2.1.nupkg",
-            //    Version = new NuGetVersion(0, 2, 3),
-            //    RemoteVersion = new NuGetVersion(0, 2, 2),
-            //};
-            //var nupkgItemInfoModelB = new NupkgItemInfoModel
-            //{
-            //    ID = "Lanymy.Common.Console",
-            //    FileFullName = "Lanymy.Common.Console.0.1.1.nupkg",
-            //    FileFullPath = "Lanymy.Common.Console.0.1.1.nupkg",
-            //    Version = new NuGetVersion(0, 1, 1),
-            //    RemoteVersion = new NuGetVersion(0, 1, 1),
-            //};
-
-            //_NupkgsSourceList.Add(nupkgItemInfoModelA);
-            //_NupkgsSourceList.Add(nupkgItemInfoModelB);
-
-            ////var json = "[{\"DisplayTitle\":\"[ Lanymy.Common.0.2.1.nupkg ] [ Lanymy.Common ] [ 0.2.1 ] [ 0.2.2 ]\",\"ID\":\"Lanymy.Common\",\"FileFullName\":\"Lanymy.Common.0.2.1.nupkg\",\"FileFullPath\":\"E:\\\\VS Project\\\\Github\\\\Lanymy\\\\Lanymy.NET\\\\src\\\\Commons\\\\Lanymy.Common\\\\bin\\\\Debug\\\\Lanymy.Common.0.2.1.nupkg\",\"Version\":{\"Version\":\"0.2.1.0\",\"IsLegacyVersion\":false,\"Revision\":0,\"IsSemVer2\":false,\"OriginalVersion\":\"0.2.1\",\"Major\":0,\"Minor\":2,\"Patch\":1,\"ReleaseLabels\":[],\"Release\":\"\",\"IsPrerelease\":false,\"HasMetadata\":false,\"Metadata\":\"\"},\"RemoteVersion\":{\"Version\":\"0.2.2.0\",\"IsLegacyVersion\":false,\"Revision\":0,\"IsSemVer2\":false,\"OriginalVersion\":\"0.2.2\",\"Major\":0,\"Minor\":2,\"Patch\":2,\"ReleaseLabels\":[],\"Release\":\"\",\"IsPrerelease\":false,\"HasMetadata\":false,\"Metadata\":\"\"},\"IsEnable\":false,\"IsChecked\":false},{\"DisplayTitle\":\"[ Lanymy.Common.Console.0.1.1.nupkg ] [ Lanymy.Common.Console ] [ 0.1.1 ] [ 0.1.1 ]\",\"ID\":\"Lanymy.Common.Console\",\"FileFullName\":\"Lanymy.Common.Console.0.1.1.nupkg\",\"FileFullPath\":\"E:\\\\VS Project\\\\Github\\\\Lanymy\\\\Lanymy.NET\\\\src\\\\Common.Clients\\\\Lanymy.Common.Console\\\\bin\\\\Debug\\\\Lanymy.Common.Console.0.1.1.nupkg\",\"Version\":{\"Version\":\"0.1.1.0\",\"IsLegacyVersion\":false,\"Revision\":0,\"IsSemVer2\":false,\"OriginalVersion\":\"0.1.1\",\"Major\":0,\"Minor\":1,\"Patch\":1,\"ReleaseLabels\":[],\"Release\":\"\",\"IsPrerelease\":false,\"HasMetadata\":false,\"Metadata\":\"\"},\"RemoteVersion\":{\"Version\":\"0.1.1.0\",\"IsLegacyVersion\":false,\"Revision\":0,\"IsSemVer2\":false,\"OriginalVersion\":\"0.1.1\",\"Major\":0,\"Minor\":1,\"Patch\":1,\"ReleaseLabels\":[],\"Release\":\"\",\"IsPrerelease\":false,\"HasMetadata\":false,\"Metadata\":\"\"},\"IsEnable\":false,\"IsChecked\":false}]";
-            ////var list = SerializeHelper.DeserializeFromJson<List<NupkgItemInfoModel>>(json);
-            ////foreach (var nupkgItemInfoModel in list)
-            ////{
-            ////    _NupkgsSourceList.Add(nupkgItemInfoModel);
-            ////}
-
-            //return;
-
-            foreach (var nupkgFullPath in _NupkgFullPathSourceList)
+            try
             {
+                //var nupkgItemInfoModelA = new NupkgItemInfoModel
+                //{
+                //    ID = "Lanymy.Common",
+                //    FileFullName = "Lanymy.Common.0.2.1.nupkg",
+                //    FileFullPath = "Lanymy.Common.0.2.1.nupkg",
+                //    Version = new NuGetVersion(0, 2, 3),
+                //    RemoteVersion = new NuGetVersion(0, 2, 2),
+                //};
+                //var nupkgItemInfoModelB = new NupkgItemInfoModel
+                //{
+                //    ID = "Lanymy.Common.Console",
+                //    FileFullName = "Lanymy.Common.Console.0.1.1.nupkg",
+                //    FileFullPath = "Lanymy.Common.Console.0.1.1.nupkg",
+                //    Version = new NuGetVersion(0, 1, 1),
+                //    RemoteVersion = new NuGetVersion(0, 1, 1),
+                //};
 
-                var lastNupkgFileinfo = Directory.GetFiles(nupkgFullPath, "*" + GlobalSettings.NUGET_PACKAGE_FILE_SUFFIX, SearchOption.TopDirectoryOnly).Select(o => new FileInfo(o)).OrderByDescending(o => o.CreationTimeUtc).FirstOrDefault();
-                if (!lastNupkgFileinfo.IfIsNullOrEmpty())
+                //_NupkgsSourceList.Add(nupkgItemInfoModelA);
+                //_NupkgsSourceList.Add(nupkgItemInfoModelB);
+
+                ////var json = "[{\"DisplayTitle\":\"[ Lanymy.Common.0.2.1.nupkg ] [ Lanymy.Common ] [ 0.2.1 ] [ 0.2.2 ]\",\"ID\":\"Lanymy.Common\",\"FileFullName\":\"Lanymy.Common.0.2.1.nupkg\",\"FileFullPath\":\"E:\\\\VS Project\\\\Github\\\\Lanymy\\\\Lanymy.NET\\\\src\\\\Commons\\\\Lanymy.Common\\\\bin\\\\Debug\\\\Lanymy.Common.0.2.1.nupkg\",\"Version\":{\"Version\":\"0.2.1.0\",\"IsLegacyVersion\":false,\"Revision\":0,\"IsSemVer2\":false,\"OriginalVersion\":\"0.2.1\",\"Major\":0,\"Minor\":2,\"Patch\":1,\"ReleaseLabels\":[],\"Release\":\"\",\"IsPrerelease\":false,\"HasMetadata\":false,\"Metadata\":\"\"},\"RemoteVersion\":{\"Version\":\"0.2.2.0\",\"IsLegacyVersion\":false,\"Revision\":0,\"IsSemVer2\":false,\"OriginalVersion\":\"0.2.2\",\"Major\":0,\"Minor\":2,\"Patch\":2,\"ReleaseLabels\":[],\"Release\":\"\",\"IsPrerelease\":false,\"HasMetadata\":false,\"Metadata\":\"\"},\"IsEnable\":false,\"IsChecked\":false},{\"DisplayTitle\":\"[ Lanymy.Common.Console.0.1.1.nupkg ] [ Lanymy.Common.Console ] [ 0.1.1 ] [ 0.1.1 ]\",\"ID\":\"Lanymy.Common.Console\",\"FileFullName\":\"Lanymy.Common.Console.0.1.1.nupkg\",\"FileFullPath\":\"E:\\\\VS Project\\\\Github\\\\Lanymy\\\\Lanymy.NET\\\\src\\\\Common.Clients\\\\Lanymy.Common.Console\\\\bin\\\\Debug\\\\Lanymy.Common.Console.0.1.1.nupkg\",\"Version\":{\"Version\":\"0.1.1.0\",\"IsLegacyVersion\":false,\"Revision\":0,\"IsSemVer2\":false,\"OriginalVersion\":\"0.1.1\",\"Major\":0,\"Minor\":1,\"Patch\":1,\"ReleaseLabels\":[],\"Release\":\"\",\"IsPrerelease\":false,\"HasMetadata\":false,\"Metadata\":\"\"},\"RemoteVersion\":{\"Version\":\"0.1.1.0\",\"IsLegacyVersion\":false,\"Revision\":0,\"IsSemVer2\":false,\"OriginalVersion\":\"0.1.1\",\"Major\":0,\"Minor\":1,\"Patch\":1,\"ReleaseLabels\":[],\"Release\":\"\",\"IsPrerelease\":false,\"HasMetadata\":false,\"Metadata\":\"\"},\"IsEnable\":false,\"IsChecked\":false}]";
+                ////var list = SerializeHelper.DeserializeFromJson<List<NupkgItemInfoModel>>(json);
+                ////foreach (var nupkgItemInfoModel in list)
+                ////{
+                ////    _NupkgsSourceList.Add(nupkgItemInfoModel);
+                ////}
+
+                //return;
+
+                foreach (var nupkgFullPath in _NupkgFullPathSourceList)
                 {
 
-                    //var tempFile = Path.GetTempFileName();
-                    //File.Copy(packagePath, tempFile, overwrite: true);
-
-                    var nupkgFileFullPath = lastNupkgFileinfo.FullName;
-                    var nugetPackageMetadataInfoModel = new NugetPackageMetadataInfoModel(nupkgFileFullPath);
-
-                    var remoteNugetPackageMetadata = await NuGetServerHelper.GetNuGetPackageMetadataByIdAsync(nugetPackageMetadataInfoModel.ID);
-
-                    var remoteVersion = remoteNugetPackageMetadata.IfIsNullOrEmpty() ? new NuGetVersion("0") : remoteNugetPackageMetadata.Identity.Version;
-
-
-                    var nupkgItemInfoModel = new NupkgItemInfoViewModel
+                    var lastNupkgFileinfo = Directory.GetFiles(nupkgFullPath, "*" + GlobalSettings.NUGET_PACKAGE_FILE_SUFFIX, SearchOption.TopDirectoryOnly).Select(o => new FileInfo(o)).OrderByDescending(o => o.CreationTimeUtc).FirstOrDefault();
+                    if (!lastNupkgFileinfo.IfIsNullOrEmpty())
                     {
-                        ID = nugetPackageMetadataInfoModel.ID,
-                        FileFullName = nugetPackageMetadataInfoModel.NugetPackageFileFullName,
-                        FileFullPath = nugetPackageMetadataInfoModel.NugetPackageFileFullPath,
-                        Version = nugetPackageMetadataInfoModel.Version,
-                        RemoteVersion = remoteVersion,
-                    };
+
+                        //var tempFile = Path.GetTempFileName();
+                        //File.Copy(packagePath, tempFile, overwrite: true);
+
+                        var nupkgFileFullPath = lastNupkgFileinfo.FullName;
+                        var nugetPackageMetadataInfoModel = new NugetPackageMetadataInfoModel(nupkgFileFullPath);
+
+                        //var remoteNugetPackageMetadata = await NuGetServerHelper.GetNuGetPackageMetadataByIdAsync(nugetPackageMetadataInfoModel.ID);
+                        var remoteNugetPackageMetadata = await _CurrentNuGetServerManipulater.GetNuGetPackageMetadataByIdAsync(nugetPackageMetadataInfoModel.ID);
+
+                        var remoteVersion = remoteNugetPackageMetadata.IfIsNullOrEmpty() ? new NuGetVersion("0") : remoteNugetPackageMetadata.Identity.Version;
 
 
-                    _NupkgsSourceList.Add(nupkgItemInfoModel);
+                        var nupkgItemInfoModel = new NupkgItemInfoViewModel
+                        {
+                            ID = nugetPackageMetadataInfoModel.ID,
+                            FileFullName = nugetPackageMetadataInfoModel.NugetPackageFileFullName,
+                            FileFullPath = nugetPackageMetadataInfoModel.NugetPackageFileFullPath,
+                            Version = nugetPackageMetadataInfoModel.Version,
+                            RemoteVersion = remoteVersion,
+                        };
+
+
+                        _NupkgsSourceList.Add(nupkgItemInfoModel);
 
 
 
 
 
-                    //lbxNupkgs.SelectedItem = nupkgItemInfoModel;
+                        //lbxNupkgs.SelectedItem = nupkgItemInfoModel;
 
-                    //var scheduleFileInfoModel = new ScheduleFileInfoModel
-                    //{
-                    //    SourceFileFullPath = lastNupkgFileinfo.FullName,
-                    //    TargetFileFullPath = Path.Combine(GlobalSettings.NuGetPackagesFolderFullPath, lastNupkgFileinfo.Name),
-                    //};
+                        //var scheduleFileInfoModel = new ScheduleFileInfoModel
+                        //{
+                        //    SourceFileFullPath = lastNupkgFileinfo.FullName,
+                        //    TargetFileFullPath = Path.Combine(GlobalSettings.NuGetPackagesFolderFullPath, lastNupkgFileinfo.Name),
+                        //};
 
-                    //logMessage.AppendLine(string.Format("[ {0} ] - [ {1} ]", nameof(scheduleFileInfoModel.SourceFileFullPath), scheduleFileInfoModel.SourceFileFullPath));
-                    //logMessage.AppendLine(string.Format("[ {0} ] - [ {1} ]", nameof(scheduleFileInfoModel.TargetFileFullPath), scheduleFileInfoModel.TargetFileFullPath));
+                        //logMessage.AppendLine(string.Format("[ {0} ] - [ {1} ]", nameof(scheduleFileInfoModel.SourceFileFullPath), scheduleFileInfoModel.SourceFileFullPath));
+                        //logMessage.AppendLine(string.Format("[ {0} ] - [ {1} ]", nameof(scheduleFileInfoModel.TargetFileFullPath), scheduleFileInfoModel.TargetFileFullPath));
 
-                    //File.Copy(scheduleFileInfoModel.SourceFileFullPath, scheduleFileInfoModel.TargetFileFullPath, true);
+                        //File.Copy(scheduleFileInfoModel.SourceFileFullPath, scheduleFileInfoModel.TargetFileFullPath, true);
 
+                    }
                 }
+
+                var list = _NupkgsSourceList.OrderBy(o => o.ID).ToList();
+
+                _NupkgsSourceList.Clear();
+
+                foreach (var nupkgItemInfoModel in list)
+                {
+                    _NupkgsSourceList.Add(nupkgItemInfoModel);
+                }
+
             }
-
-            var list = _NupkgsSourceList.OrderBy(o => o.ID).ToList();
-
-            _NupkgsSourceList.Clear();
-
-            foreach (var nupkgItemInfoModel in list)
+            catch (Exception exception)
             {
-                _NupkgsSourceList.Add(nupkgItemInfoModel);
+
+                MessageBox.Show(exception.ToString());
             }
 
         }
@@ -289,33 +353,42 @@ namespace PushNugetPackageTools
         private async void btnPublishNupkgs_Click(object sender, RoutedEventArgs e)
         {
 
-            if (lbxNupkgs.SelectedItems.Count <= 0 || tbxNupkgKey.Text.Trim().IfIsNullOrEmpty())
+            try
             {
-                return;
-            }
+                if (lbxNupkgs.SelectedItems.Count <= 0 || tbxNupkgKey.Text.Trim().IfIsNullOrEmpty())
+                {
+                    return;
+                }
 
-            var publishKey = tbxNupkgKey.Text.Trim();
+                var publishKey = tbxNupkgKey.Text.Trim();
 
-            foreach (var lbxNupkgsSelectedItem in lbxNupkgs.SelectedItems)
-            {
-
-                var nupkgItemInfoModel = lbxNupkgsSelectedItem as NupkgItemInfoViewModel;
-
-                if (nupkgItemInfoModel.IsEnable)
+                foreach (var lbxNupkgsSelectedItem in lbxNupkgs.SelectedItems)
                 {
 
-                    await NuGetServerHelper.PublishNuGetPackage(nupkgItemInfoModel.FileFullPath, publishKey);
+                    var nupkgItemInfoModel = lbxNupkgsSelectedItem as NupkgItemInfoViewModel;
+
+                    if (nupkgItemInfoModel.IsEnable)
+                    {
+
+                        //await NuGetServerHelper.PublishNuGetPackage(nupkgItemInfoModel.FileFullPath, publishKey);
+                        await _CurrentNuGetServerManipulater.PublishNuGetPackage(nupkgItemInfoModel.FileFullPath, publishKey);
+
+                    }
+
 
                 }
 
+                _CurrentNupkgsInfoModel.NupkgPublishKey = publishKey;
 
+                MessageBox.Show("发布完成");
+            }
+            catch (Exception exception)
+            {
+                MessageBox.Show(exception.ToString());
             }
 
-            _CurrentNupkgsInfoModel.NupkgPublishKey = publishKey;
-
-            MessageBox.Show("发布完成");
-
         }
+
 
     }
 }

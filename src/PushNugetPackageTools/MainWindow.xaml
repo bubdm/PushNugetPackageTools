@@ -41,14 +41,63 @@
 
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"></RowDefinition>
-            <RowDefinition Height="*"></RowDefinition>
             <RowDefinition Height="Auto"></RowDefinition>
             <RowDefinition Height="*"></RowDefinition>
             <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="*"></RowDefinition>
             <RowDefinition Height="Auto"></RowDefinition>
         </Grid.RowDefinitions>
 
-        <Grid Grid.Row="0">
+        <Grid Grid.Row="0" Margin="0,0,0,20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"></ColumnDefinition>
+                <ColumnDefinition Width="*"></ColumnDefinition>
+                <ColumnDefinition Width="Auto"></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+
+            <TextBox Grid.Column="0"
+                     x:Name="tbxNugetServerUrl"
+                     IsEnabled="False"
+                     HorizontalAlignment="Stretch"
+                     VerticalAlignment="Stretch"
+                     HorizontalContentAlignment="Center"
+                     VerticalContentAlignment="Center"
+                     Text="https://api.nuget.org/v3/index.json" />
+
+            <TextBox Grid.Column="1"
+                     x:Name="tbxNupkgKey"
+                     IsEnabled="False"
+                     Margin="20,0"
+                     HorizontalAlignment="Stretch"
+                     VerticalAlignment="Stretch"
+                     HorizontalContentAlignment="Center"
+                     VerticalContentAlignment="Center"
+                     Text="Nuget API Key" />
+
+            <StackPanel Grid.Column="2" Orientation="Horizontal">
+                <Button x:Name="btnSetNuGetConfig"
+                        IsEnabled="True"
+                        Width="80"
+                        Click="BtnSetNuGetConfig_OnClick"
+                        Content="设置"></Button>
+                <Button x:Name="btnSaveNuGetConfig"
+                        IsEnabled="False"
+                        Margin="20,0"
+                        Width="80"
+                        Click="BtnSaveNuGetConfig_OnClick"
+                        Content="保存"></Button>
+                <Button x:Name="btnCancelNuGetConfig"
+                        IsEnabled="False"
+                        Width="80"
+                        Click="BtnCancelNuGetConfig_OnClick"
+                        Content="取消"></Button>
+            </StackPanel>
+
+
+
+        </Grid>
+
+        <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"></ColumnDefinition>
                 <ColumnDefinition Width="Auto"></ColumnDefinition>
@@ -76,13 +125,13 @@
 
         </Grid>
 
-        <ListBox Grid.Row="1"
+        <ListBox Grid.Row="2"
                  x:Name="lbxNupkgFullPath"
                  FontSize="{StaticResource DefaultFontSize}"
                  Margin="0,20"
                  ></ListBox>
 
-        <Grid Grid.Row="2"
+        <Grid Grid.Row="3"
               HorizontalAlignment="Center">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"></ColumnDefinition>
@@ -106,7 +155,7 @@
 
         </Grid>
 
-        <ListBox Grid.Row="3"
+        <ListBox Grid.Row="4"
                  x:Name="lbxNupkgs"
                  SelectionMode="Multiple"
                  Margin="0,20"
@@ -139,12 +188,6 @@
 
         </ListBox>
 
-        <TextBox Grid.Row="4"
-                 x:Name="tbxNupkgKey"
-                 Margin="0,0,0,20"
-                 Width="550"
-                 HorizontalAlignment="Center"
-                 VerticalAlignment="Center">Nuget 上传 包 KEY</TextBox>
 
         <Button Grid.Row="5"
                 x:Name="btnPublishNupkgs"

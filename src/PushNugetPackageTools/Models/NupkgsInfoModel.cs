@@ -15,6 +15,8 @@ namespace PushNugetPackageTools.Models
 
         public string NupkgPublishKey { get; set; }
 
+        public string NugetServerUrl { get; set; }
+
     }
 
 }
