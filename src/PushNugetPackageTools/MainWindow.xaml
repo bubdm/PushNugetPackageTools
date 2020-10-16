@@ -75,6 +75,26 @@
                      Text="Nuget API Key" />
 
             <StackPanel Grid.Column="2" Orientation="Horizontal">
+
+                <RadioButton x:Name="rbnV2"
+                             Content="V2"
+                             GroupName="RbnV3GroupName"
+                             Checked="RbnV2_OnChecked"
+                             HorizontalAlignment="Center"
+                             VerticalContentAlignment="Center"
+                             FontSize="{StaticResource DefaultFontSize}"
+                             />
+
+                <RadioButton x:Name="rbnV3"
+                             Margin="10,0,20,0"
+                             Content="V3"
+                             IsChecked="True"
+                             GroupName="RbnV3GroupName"
+                             HorizontalAlignment="Center"
+                             VerticalContentAlignment="Center"
+                             FontSize="{StaticResource DefaultFontSize}"
+                             Checked="RbnV3_OnChecked" />
+
                 <Button x:Name="btnSetNuGetConfig"
                         IsEnabled="True"
                         Width="80"

@@ -17,18 +17,20 @@ namespace PushNugetPackageTools.Models
     {
 
         public string NugetServerUrl { get; }
+        public bool IsV3 { get; }
 
         private readonly string _ApiKey;
 
         private readonly SourceRepository _CurrentRepository;
 
 
-        public NuGetServerManipulater(string apiKey, string nugetServerUrl = "https://api.nuget.org/v3/index.json")
+        public NuGetServerManipulater(string apiKey, string nugetServerUrl = "https://api.nuget.org/v3/index.json", bool isV3 = true)
         {
 
             _ApiKey = apiKey;
             NugetServerUrl = nugetServerUrl;
-            _CurrentRepository = CreateRepository(_ApiKey);
+            IsV3 = isV3;
+            _CurrentRepository = CreateRepository(NugetServerUrl);
 
         }
 
@@ -37,20 +39,24 @@ namespace PushNugetPackageTools.Models
 
         private SourceRepository CreateRepository(string source)
         {
-            return CreateRepository(new PackageSource(source), null);
+            return PackageRepositoryFactory.CreateRepository(source);
+            //return CreateRepository(new PackageSource(source), null);
         }
 
-        private SourceRepository CreateRepository(PackageSource packageSource, IEnumerable<Lazy<INuGetResourceProvider>> additionalProviders)
-        {
-            var providers = Repository.Provider.GetCoreV3();
+        //private SourceRepository CreateRepository(PackageSource packageSource, IEnumerable<Lazy<INuGetResourceProvider>> additionalProviders)
+        //{
 
-            if (additionalProviders != null)
-            {
-                providers = providers.Concat(additionalProviders);
-            }
+        //    //var providers = Repository.Provider.GetCoreV3();
+        //    var providers = Repository.Provider.GetCoreV3();
 
-            return Repository.CreateSource(providers, packageSource);
-        }
+        //    if (additionalProviders != null)
+        //    {
+        //        providers = providers.Concat(additionalProviders);
+        //    }
+
+        //    return Repository.CreateSource(providers, packageSource);
+
+        //}
 
 
         public async Task<IPackageSearchMetadata> GetNuGetPackageMetadataByIdAsync(string packageID)
@@ -67,12 +73,12 @@ namespace PushNugetPackageTools.Models
         }
 
 
-        public async Task PublishNuGetPackage(string packageFileFullPath, string publishKey)
+        public async Task PublishNuGetPackage(string packageFileFullPath)
         {
 
             var packageResource = await _CurrentRepository.GetResourceAsync<PackageUpdateResource>();
 
-            await packageResource.Push(packageFileFullPath, null, 999, false, s => publishKey, s => publishKey, false, NullLogger.Instance);
+            await packageResource.Push(packageFileFullPath, null, 999, false, s => _ApiKey, s => _ApiKey, IsV3, false, null, NullLogger.Instance);
 
         }
 

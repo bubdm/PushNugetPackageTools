@@ -69,7 +69,10 @@ namespace PushNugetPackageTools
 
             if (_CurrentNupkgsInfoModel.IfIsNullOrEmpty())
             {
-                _CurrentNupkgsInfoModel = new NupkgsInfoModel();
+                _CurrentNupkgsInfoModel = new NupkgsInfoModel
+                {
+                    IsV3 = true
+                };
             }
             else
             {
@@ -104,18 +107,37 @@ namespace PushNugetPackageTools
 
             if (!_CurrentNupkgsInfoModel.NugetServerUrl.IfIsNullOrEmpty())
             {
-                _CurrentNuGetServerManipulater = new NuGetServerManipulater(_CurrentNupkgsInfoModel.NupkgPublishKey, _CurrentNupkgsInfoModel.NugetServerUrl);
+                _CurrentNuGetServerManipulater = new NuGetServerManipulater(_CurrentNupkgsInfoModel.NupkgPublishKey, _CurrentNupkgsInfoModel.NugetServerUrl, _CurrentNupkgsInfoModel.IsV3);
             }
 
         }
 
+        private void RbnV2_OnChecked(object sender, RoutedEventArgs e)
+        {
+            _CurrentNupkgsInfoModel.IsV3 = false;
+        }
+
+        private void RbnV3_OnChecked(object sender, RoutedEventArgs e)
+        {
+            if (!_CurrentNupkgsInfoModel.IfIsNullOrEmpty())
+            {
+                _CurrentNupkgsInfoModel.IsV3 = true;
+            }
+        }
+
         private void SetNuGetConfigControlsIsEnabledStatus(bool isSettings)
         {
+
             tbxNugetServerUrl.IsEnabled = isSettings;
             tbxNupkgKey.IsEnabled = isSettings;
+
+            rbnV2.IsEnabled = isSettings;
+            rbnV3.IsEnabled = isSettings;
+
             btnSetNuGetConfig.IsEnabled = !isSettings;
             btnSaveNuGetConfig.IsEnabled = isSettings;
             btnCancelNuGetConfig.IsEnabled = isSettings;
+
         }
 
         private void BtnSetNuGetConfig_OnClick(object sender, RoutedEventArgs e)
@@ -136,7 +158,8 @@ namespace PushNugetPackageTools
             _CurrentNupkgsInfoModel.NugetServerUrl = tbxNugetServerUrl.Text.Trim();
             _CurrentNupkgsInfoModel.NupkgPublishKey = tbxNupkgKey.Text.Trim();
 
-            _CurrentNuGetServerManipulater = new NuGetServerManipulater(_CurrentNupkgsInfoModel.NupkgPublishKey, _CurrentNupkgsInfoModel.NugetServerUrl);
+            _CurrentNuGetServerManipulater = new NuGetServerManipulater(_CurrentNupkgsInfoModel.NupkgPublishKey, _CurrentNupkgsInfoModel.NugetServerUrl, _CurrentNupkgsInfoModel.IsV3);
+            //_CurrentNuGetServerManipulater = new NuGetServerManipulater(_CurrentNupkgsInfoModel.NupkgPublishKey, _CurrentNupkgsInfoModel.NugetServerUrl);
 
         }
 
@@ -284,6 +307,8 @@ namespace PushNugetPackageTools
 
                 //return;
 
+                var list = new List<NupkgItemInfoViewModel>();
+
                 foreach (var nupkgFullPath in _NupkgFullPathSourceList)
                 {
 
@@ -313,9 +338,9 @@ namespace PushNugetPackageTools
                         };
 
 
-                        _NupkgsSourceList.Add(nupkgItemInfoModel);
+                        //_NupkgsSourceList.Add(nupkgItemInfoModel);
 
-
+                        list.Add(nupkgItemInfoModel);
 
 
 
@@ -335,11 +360,11 @@ namespace PushNugetPackageTools
                     }
                 }
 
-                var list = _NupkgsSourceList.OrderBy(o => o.ID).ToList();
+                //list = list.OrderBy(o => o.ID).ToList();
 
                 _NupkgsSourceList.Clear();
 
-                foreach (var nupkgItemInfoModel in list)
+                foreach (var nupkgItemInfoModel in list.OrderBy(o => o.ID))
                 {
                     _NupkgsSourceList.Add(nupkgItemInfoModel);
                 }
@@ -363,7 +388,7 @@ namespace PushNugetPackageTools
                     return;
                 }
 
-                var publishKey = tbxNupkgKey.Text.Trim();
+                //var publishKey = tbxNupkgKey.Text.Trim();
 
                 foreach (var lbxNupkgsSelectedItem in lbxNupkgs.SelectedItems)
                 {
@@ -374,14 +399,14 @@ namespace PushNugetPackageTools
                     {
 
                         //await NuGetServerHelper.PublishNuGetPackage(nupkgItemInfoModel.FileFullPath, publishKey);
-                        await _CurrentNuGetServerManipulater.PublishNuGetPackage(nupkgItemInfoModel.FileFullPath, publishKey);
+                        await _CurrentNuGetServerManipulater.PublishNuGetPackage(nupkgItemInfoModel.FileFullPath);
 
                     }
 
 
                 }
 
-                _CurrentNupkgsInfoModel.NupkgPublishKey = publishKey;
+                //_CurrentNupkgsInfoModel.NupkgPublishKey = publishKey;
 
                 MessageBox.Show("发布完成");
             }
@@ -391,6 +416,7 @@ namespace PushNugetPackageTools
             }
 
         }
+
 
 
     }

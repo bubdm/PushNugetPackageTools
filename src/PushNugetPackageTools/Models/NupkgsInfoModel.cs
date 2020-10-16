@@ -17,6 +17,8 @@ namespace PushNugetPackageTools.Models
 
         public string NugetServerUrl { get; set; }
 
+        public bool IsV3 { get; set; }
+
     }
 
 }
