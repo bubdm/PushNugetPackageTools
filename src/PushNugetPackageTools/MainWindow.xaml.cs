@@ -227,6 +227,45 @@ namespace PushNugetPackageTools
 
         }
 
+        private void BtnBatchImport_OnClick(object sender, RoutedEventArgs e)
+        {
+
+            var strBatchImportPaths = tbxBatchImportPaths.Text.Trim();//.ToLower();
+
+            if (!strBatchImportPaths.IfIsNullOrEmpty())
+            {
+
+                var batchImportPaths = strBatchImportPaths.Split("\r\n", StringSplitOptions.RemoveEmptyEntries);
+
+                if (!batchImportPaths.IfIsNullOrEmpty())
+                {
+                    var sourceList = _NupkgFullPathSourceList.Distinct().ToList();
+                    foreach (var batchImportPath in batchImportPaths)
+                    {
+                        var batchImportPathDir = File.Exists(batchImportPath) ? Path.GetDirectoryName(batchImportPath) : batchImportPath;
+                        if (Directory.Exists(batchImportPathDir))
+                        {
+                            var sourceItem = sourceList.Where(o => o.ToLower() == batchImportPathDir.ToLower()).FirstOrDefault();
+                            if (sourceItem.IfIsNullOrEmpty())
+                            {
+                                sourceList.Add(batchImportPathDir);
+                            }
+                        }
+                    }
+                    //list.AddRange(paths);
+                    sourceList = sourceList.OrderBy(o => o).ToList();
+                    _NupkgFullPathSourceList.Clear();
+                    foreach (var nupkgFullPathSourceItem in sourceList)
+                    {
+                        _NupkgFullPathSourceList.Add(nupkgFullPathSourceItem);
+                    }
+                }
+
+
+            }
+
+        }
+
         private void btnRemoveNupkgFullPath_Click(object sender, RoutedEventArgs e)
         {
             var selectedItem = lbxNupkgFullPath.SelectedItem;
