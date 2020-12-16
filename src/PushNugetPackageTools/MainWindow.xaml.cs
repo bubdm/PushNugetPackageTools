@@ -14,6 +14,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using Lanymy.Common.ExtensionFunctions;
+using Lanymy.Common.Helpers;
 using NuGet.Versioning;
 using PushNugetPackageTools.Models;
 
@@ -53,6 +54,10 @@ namespace PushNugetPackageTools
 
         private void NewWindow_Loaded(object sender, RoutedEventArgs e)
         {
+
+            var version = VersionHelper.GetCallDomainAssemblyVersion();
+
+            Title = string.Format("{0} - [ v{1} ]", Title, version);
 
             _NameSourceList.Clear();
 
