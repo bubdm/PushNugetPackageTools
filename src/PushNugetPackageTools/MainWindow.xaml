@@ -4,9 +4,8 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:PushNugetPackageTools"
-        xmlns:system="clr-namespace:System;assembly=System.Runtime"
         mc:Ignorable="d"
-        Title="PushNugetPackageTools"
+        Title="NewWindow"
         MinHeight="768"
         MinWidth="1024"
         Height="768"
@@ -15,32 +14,22 @@
 
     <Window.Resources>
 
-        <system:Double x:Key="DefaultFontSize">14</system:Double>
 
-        <Style TargetType="TextBox">
-            <Setter Property="Height"
-                    Value="30"></Setter>
-            <Setter Property="HorizontalContentAlignment"
-                    Value="Center"></Setter>
-            <Setter Property="VerticalContentAlignment"
-                    Value="Center"></Setter>
-            <Setter Property="FontSize"
-                    Value="{StaticResource DefaultFontSize}"></Setter>
+        <Style TargetType="TextBox"
+               BasedOn="{StaticResource DefaultTextBox}">
         </Style>
 
-        <Style TargetType="Button">
-            <Setter Property="Height"
-                    Value="30"></Setter>
-            <Setter Property="FontSize"
-                    Value="{StaticResource DefaultFontSize}"></Setter>
+        <Style TargetType="Button"
+               BasedOn="{StaticResource DefaultButton}">
+
         </Style>
 
     </Window.Resources>
 
+
     <Grid Margin="20">
 
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"></RowDefinition>
             <RowDefinition Height="Auto"></RowDefinition>
             <RowDefinition Height="Auto"></RowDefinition>
             <RowDefinition Height="*"></RowDefinition>
@@ -49,196 +38,120 @@
             <RowDefinition Height="Auto"></RowDefinition>
         </Grid.RowDefinitions>
 
-        <Grid Grid.Row="0" Margin="0,0,0,20">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"></ColumnDefinition>
-                <ColumnDefinition Width="*"></ColumnDefinition>
-                <ColumnDefinition Width="Auto"></ColumnDefinition>
-            </Grid.ColumnDefinitions>
+        <StackPanel Grid.Row="0"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Center">
 
-            <TextBox Grid.Column="0"
-                     x:Name="tbxNugetServerUrl"
-                     IsEnabled="False"
+            <ComboBox x:Name="cbxName"
+                      MinWidth="200"
+                      HorizontalContentAlignment="Center"
+                      VerticalContentAlignment="Center"
+                      DisplayMemberPath="NuGetSettingName"
+                      SelectionChanged="CbxName_OnSelectionChanged">
+            </ComboBox>
+
+            <Button x:Name="btnAdd"
+                Margin="40,0,0,0"
+                    Width="80"
+                    Click="btnAdd_Click">新增</Button>
+            <Button x:Name="btnUpdate"
+                    Margin="20,0"
+                    Width="80"
+                    Click="btnUpdate_Click">修改</Button>
+            <Button x:Name="btnRemove"
+                    Width="80"
+                    Click="btnRemove_Click">删除</Button>
+
+        </StackPanel>
+
+        <StackPanel Grid.Row="1"
+                    Margin="0,20"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center">
+
+            <TextBox x:Name="tbxNugetServerUrl"
+                     Width="400"
+                     IsReadOnly="True"
                      HorizontalAlignment="Stretch"
                      VerticalAlignment="Stretch"
                      HorizontalContentAlignment="Center"
                      VerticalContentAlignment="Center"
                      Text="https://api.nuget.org/v3/index.json" />
 
-            <TextBox Grid.Column="1"
-                     x:Name="tbxNupkgKey"
-                     IsEnabled="False"
-                     Margin="20,0"
-                     HorizontalAlignment="Stretch"
-                     VerticalAlignment="Stretch"
-                     HorizontalContentAlignment="Center"
-                     VerticalContentAlignment="Center"
-                     Text="Nuget API Key" />
-
-            <StackPanel Grid.Column="2" Orientation="Horizontal">
-
-                <RadioButton x:Name="rbnV2"
-                             Content="V2"
-                             GroupName="RbnV3GroupName"
-                             Checked="RbnV2_OnChecked"
-                             HorizontalAlignment="Center"
-                             VerticalContentAlignment="Center"
-                             FontSize="{StaticResource DefaultFontSize}"
-                             />
-
-                <RadioButton x:Name="rbnV3"
-                             Margin="10,0,20,0"
-                             Content="V3"
-                             IsChecked="True"
-                             GroupName="RbnV3GroupName"
-                             HorizontalAlignment="Center"
-                             VerticalContentAlignment="Center"
-                             FontSize="{StaticResource DefaultFontSize}"
-                             Checked="RbnV3_OnChecked" />
-
-                <Button x:Name="btnSetNuGetConfig"
-                        IsEnabled="True"
-                        Width="80"
-                        Click="BtnSetNuGetConfig_OnClick"
-                        Content="设置"></Button>
-                <Button x:Name="btnSaveNuGetConfig"
-                        IsEnabled="False"
-                        Margin="20,0"
-                        Width="80"
-                        Click="BtnSaveNuGetConfig_OnClick"
-                        Content="保存"></Button>
-                <Button x:Name="btnCancelNuGetConfig"
-                        IsEnabled="False"
-                        Width="80"
-                        Click="BtnCancelNuGetConfig_OnClick"
-                        Content="取消"></Button>
-            </StackPanel>
+            <TextBox  x:Name="tbxNupkgPublishKey"
+                      Width="400"
+                      IsReadOnly="True"
+                      Margin="20,0"
+                      HorizontalAlignment="Stretch"
+                      VerticalAlignment="Stretch"
+                      HorizontalContentAlignment="Center"
+                      VerticalContentAlignment="Center"
+                      Text="Nuget API Key" />
 
 
 
-        </Grid>
+        </StackPanel>
 
-        <Grid Grid.Row="1">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"></ColumnDefinition>
-                <ColumnDefinition Width="Auto"></ColumnDefinition>
-                <ColumnDefinition Width="Auto"></ColumnDefinition>
-                <ColumnDefinition Width="Auto"></ColumnDefinition>
-            </Grid.ColumnDefinitions>
+        <TextBox x:Name="tbxAllNupkgFileFullPath"
+                 Grid.Row="2"
+                 IsReadOnly="True"
+                 TextWrapping="Wrap"
+                 AcceptsReturn="True"
+                 VerticalScrollBarVisibility="Visible"
+                 VerticalAlignment="Stretch"
+                 HorizontalContentAlignment="Left"
+                 VerticalContentAlignment="Top"
+                 Height="Auto"
+                 Padding="10"/>
 
-            <TextBox Grid.Column="0"
-                     x:Name="tbxAddNupkgFullPath"
-                     IsReadOnly="True">文件夹路径</TextBox>
-            <Button Grid.Column="1"
-                    x:Name="btnNupkgFullPath"
-                    Margin="20,0,0,0"
-                    Width="150"
-                    Click="btnNupkgFullPath_Click">选择要发布的包</Button>
-            <Button Grid.Column="2"
-                    x:Name="btnAddNupkgFullPath"
-                    Margin="20,0"
-                    Width="150"
-                    Click="btnAddNupkgFullPath_Click">添加发布包所在路径</Button>
-            <Button Grid.Column="3"
-                    x:Name="btnRemoveNupkgFullPath"
-                    Width="150"
-                    Click="btnRemoveNupkgFullPath_Click">删除路径</Button>
+        <StackPanel Grid.Row="3"
+                    Margin="0,20"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Center">
 
-        </Grid>
-
-        <Grid Grid.Row="2" 
-              Margin="0,20,0,0">
-
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"></ColumnDefinition>
-                <ColumnDefinition Width="*"></ColumnDefinition>
-            </Grid.ColumnDefinitions>
-
-            <TextBox Grid.Column="0"
-                     x:Name="tbxBatchImportPaths"
-                     TextWrapping="Wrap"
-                     AcceptsReturn="True" />
-
-            <Button Grid.Column="1"
-                    x:Name="btnBatchImport"
-                    Width="150"
-                    Click="BtnBatchImport_OnClick">批量导入</Button>
-
-
-        </Grid>
-
-        <ListBox Grid.Row="3"
-                 x:Name="lbxNupkgFullPath"
-                 FontSize="{StaticResource DefaultFontSize}"
-                 Margin="0,20"
-                 ></ListBox>
-
-        <Grid Grid.Row="4"
-              HorizontalAlignment="Center">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"></ColumnDefinition>
-                <ColumnDefinition Width="Auto"></ColumnDefinition>
-                <ColumnDefinition Width="Auto"></ColumnDefinition>
-            </Grid.ColumnDefinitions>
-
-            <Button Grid.Column="0"
-                    x:Name="btnSelectAll"
-                    Width="80"
-                    Click="btnSelectAll_Click">全选</Button>
-            <Button Grid.Column="1"
-                    x:Name="btnUnSelectAll"
-                    Margin="20,0"
-                    Width="80"
-                    Click="btnUnSelectAll_Click">取消全选</Button>
-            <Button Grid.Column="2"
-                    x:Name="btnRefreshNupkgs"
+            <Button x:Name="btnRefreshNupkgs"
                     Width="80"
                     Click="btnRefreshNupkgs_Click">刷新</Button>
 
-        </Grid>
+            <Button x:Name="btnSelectAll"
+                    Margin="20,0"
+                    Width="80"
+                    Click="btnSelectAll_Click">全选</Button>
 
-        <ListBox Grid.Row="5"
+            <Button x:Name="btnUnSelectAll"
+                    Width="80"
+                    Click="btnUnSelectAll_Click">取消全选</Button>
+
+
+        </StackPanel>
+
+        <ListBox Grid.Row="4"
                  x:Name="lbxNupkgs"
-                 SelectionMode="Multiple"
-                 Margin="0,20"
-                 SelectionChanged="LbxNupkgs_OnSelectionChanged">
-
-            <!--<ListBox.ItemTemplate>
-
-                <DataTemplate>
-
-                    <TextBlock x:Name="tbk"
-                        Text="{Binding Path=DisplayTitle}"
-                               FontSize="{StaticResource DefaultFontSize}"
-                               ></TextBlock>
-
-                    <DataTemplate.Triggers>
-
-                        <DataTrigger Binding="{Binding Path=IsChecked,RelativeSource={RelativeSource Self}}"
-                                     Value="True">
-                            <Setter TargetName="tbk"
-                                    Property="Background"
-                                    Value="Red" />
-                        </DataTrigger>
-                         
-                    </DataTemplate.Triggers>
-                
-                </DataTemplate>
-                
-            </ListBox.ItemTemplate>-->
+                 SelectionMode="Extended"
+                 SelectionChanged="LbxNupkgs_OnSelectionChanged"
+                 >
 
 
         </ListBox>
 
-
-        <Button Grid.Row="6"
+        <Button Grid.Row="5"
                 x:Name="btnPublishNupkgs"
+                Margin="0,20,0,0"
                 HorizontalAlignment="Center"
-                VerticalAlignment="Center" Width="150"
+                VerticalAlignment="Center"
+                Width="150"
                 Click="btnPublishNupkgs_Click">发布包</Button>
 
+        <!--<TextBlock Grid.Row="5" HorizontalAlignment="Right" VerticalAlignment="Center"
+                   FontSize="{StaticResource DefaultFontSize}">
+            10/30
+        </TextBlock>-->
 
 
     </Grid>
+
+
+
 
 </Window>

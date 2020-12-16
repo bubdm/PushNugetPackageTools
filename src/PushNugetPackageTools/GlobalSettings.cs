@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using Lanymy.Common;
+using Lanymy.Common.ExtensionFunctions;
+using Lanymy.Common.Helpers;
+using PushNugetPackageTools.Models;
 
 namespace PushNugetPackageTools
 {
@@ -33,6 +36,9 @@ namespace PushNugetPackageTools
         /// </summary>
         public static string NuGetPackagesFolderFullPath => _NuGetPackagesFolderFullPath;
 
+        public static NuGetSettingConfigModel CurrentNuGetSettingConfigModel { get; private set; }
+
+
         static GlobalSettings()
         {
 
@@ -42,6 +48,7 @@ namespace PushNugetPackageTools
 
             InitBasePathInfo();
 
+            LoadNuGetSettingConfigModel();
 
         }
 
@@ -52,6 +59,48 @@ namespace PushNugetPackageTools
             _NuGetPackagesFolderFullPath = Path.Combine(CallDomainBasePath, NUGET_PACKAGES_FOLDER_NAME);
 
         }
+
+        private static void LoadNuGetSettingConfigModel()
+        {
+
+            NuGetSettingConfigModel currentNuGetSettingConfigModel = null;
+
+            try
+            {
+
+                currentNuGetSettingConfigModel = IsolatedStorageHelper.GetModel<NuGetSettingConfigModel>();
+
+            }
+            catch (Exception e)
+            {
+                currentNuGetSettingConfigModel = null;
+            }
+
+            if (currentNuGetSettingConfigModel.IfIsNullOrEmpty())
+            {
+                currentNuGetSettingConfigModel = new NuGetSettingConfigModel
+                {
+                    CurrentNuGetSettingInfoModel = new NuGetSettingInfoModel(),
+                    NuGetSettingList = new List<NuGetSettingInfoModel>(),
+                    CreateDateTime = DateTime.Now,
+                    LastUpdateDateTime = DateTime.Now,
+
+                };
+            }
+
+
+            CurrentNuGetSettingConfigModel = currentNuGetSettingConfigModel;
+
+        }
+
+
+        public static void SaveNuGetSettingConfigModel()
+        {
+
+            IsolatedStorageHelper.SaveModel(CurrentNuGetSettingConfigModel);
+
+        }
+
 
     }
 

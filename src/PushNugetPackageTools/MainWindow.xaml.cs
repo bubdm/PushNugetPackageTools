@@ -4,7 +4,6 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -13,304 +12,170 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
 using System.Windows.Shapes;
-using Lanymy.Common;
 using Lanymy.Common.ExtensionFunctions;
-using Microsoft.Win32;
-using NuGet.Common;
-using NuGet.Configuration;
-using NuGet.Protocol;
-using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 using PushNugetPackageTools.Models;
-using Path = System.IO.Path;
 
 namespace PushNugetPackageTools
 {
     /// <summary>
-    /// Interaction logic for MainWindow.xaml
+    /// NewWindow.xaml 的交互逻辑
     /// </summary>
     public partial class MainWindow : Window
     {
 
-        private NupkgsInfoModel _CurrentNupkgsInfoModel;
-        private readonly ObservableCollection<string> _NupkgFullPathSourceList = new ObservableCollection<string>();
+        private static readonly NuGetSettingConfigModel _CurrentNuGetSettingConfigModel = GlobalSettings.CurrentNuGetSettingConfigModel;
+
+        private NuGetSettingInfoModel _CurrentNuGetSettingInfoModel = _CurrentNuGetSettingConfigModel.CurrentNuGetSettingInfoModel;
+
+        private readonly ObservableCollection<NuGetSettingInfoModel> _NameSourceList = new ObservableCollection<NuGetSettingInfoModel>();
+
         private readonly ObservableCollection<NupkgItemInfoViewModel> _NupkgsSourceList = new ObservableCollection<NupkgItemInfoViewModel>();
 
-        private string _NupkgPublishKeyTemp;
-        private string _NugetServerUrlTemp;
-
         private NuGetServerManipulater _CurrentNuGetServerManipulater;
+
 
         public MainWindow()
         {
             InitializeComponent();
-            Loaded += MainWindow_Loaded;
-            Closing += MainWindow_Closing;
+            Loaded += NewWindow_Loaded;
+            Closing += NewWindow_Closing;
         }
 
-        private void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        private void NewWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-
-            _CurrentNupkgsInfoModel.NupkgFullPathList = _NupkgFullPathSourceList.ToList();
-
-            IsolatedStorageHelper.SaveModel(_CurrentNupkgsInfoModel);
-
+            _CurrentNuGetSettingConfigModel.CurrentNuGetSettingInfoModel = _CurrentNuGetSettingInfoModel;
+            _CurrentNuGetSettingConfigModel.NuGetSettingList = new List<NuGetSettingInfoModel>(_NameSourceList);
+            _CurrentNuGetSettingConfigModel.LastUpdateDateTime = DateTime.Now;
+            GlobalSettings.SaveNuGetSettingConfigModel();
         }
 
-        private void MainWindow_Loaded(object sender, RoutedEventArgs e)
+        private void NewWindow_Loaded(object sender, RoutedEventArgs e)
         {
 
-            //判断网络是否可用
-            //NetworkInterface.GetIsNetworkAvailable()
+            _NameSourceList.Clear();
 
-            _CurrentNupkgsInfoModel = IsolatedStorageHelper.GetModel<NupkgsInfoModel>();
-
-            if (_CurrentNupkgsInfoModel.IfIsNullOrEmpty())
+            foreach (var nuGetSettingInfoModel in _CurrentNuGetSettingConfigModel.NuGetSettingList)
             {
-                _CurrentNupkgsInfoModel = new NupkgsInfoModel
-                {
-                    IsV3 = true
-                };
-            }
-            else
-            {
-
-                foreach (var nupkgFullPathItem in _CurrentNupkgsInfoModel.NupkgFullPathList)
-                {
-
-                    _NupkgFullPathSourceList.Add(nupkgFullPathItem);
-
-                }
-
-                if (!_CurrentNupkgsInfoModel.NugetServerUrl.IfIsNullOrEmpty())
-                {
-                    tbxNugetServerUrl.Text = _CurrentNupkgsInfoModel.NugetServerUrl;
-                }
-
-                if (!_CurrentNupkgsInfoModel.NupkgPublishKey.IfIsNullOrEmpty())
-                {
-                    tbxNupkgKey.Text = _CurrentNupkgsInfoModel.NupkgPublishKey;
-                }
-
-
-
+                _NameSourceList.Add(nuGetSettingInfoModel);
             }
 
-            //_NupkgFullPathSourceList.Add(@"E:\VS Project\Github\Lanymy\Lanymy.NET\src\Commons\Lanymy.Common\bin\Debug");
-            //_NupkgFullPathSourceList.Add(@"E:\VS Project\Github\Lanymy\Lanymy.NET\src\Common.Clients\Lanymy.Common.Console\bin\Debug");
+            cbxName.ItemsSource = _NameSourceList;
 
-            lbxNupkgFullPath.ItemsSource = _NupkgFullPathSourceList;
+            var currentNuGetSettingInfoModel = _NameSourceList.Where(o => o.ID == _CurrentNuGetSettingInfoModel.ID).FirstOrDefault();
+            if (!currentNuGetSettingInfoModel.IfIsNullOrEmpty())
+            {
+                cbxName.SelectedItem = currentNuGetSettingInfoModel;
+            }
+
             lbxNupkgs.ItemsSource = _NupkgsSourceList;
             lbxNupkgs.DisplayMemberPath = "DisplayTitle";
 
-            if (!_CurrentNupkgsInfoModel.NugetServerUrl.IfIsNullOrEmpty())
+        }
+
+
+        private void CbxName_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+
+            _CurrentNuGetServerManipulater = null;
+            tbxNugetServerUrl.Text = string.Empty;
+            tbxNupkgPublishKey.Text = string.Empty;
+            tbxAllNupkgFileFullPath.Text = string.Empty;
+            _NupkgsSourceList.Clear();
+
+
+            _CurrentNuGetSettingInfoModel = cbxName.SelectedItem as NuGetSettingInfoModel;
+
+
+            if (!_CurrentNuGetSettingInfoModel.IfIsNullOrEmpty())
             {
-                _CurrentNuGetServerManipulater = new NuGetServerManipulater(_CurrentNupkgsInfoModel.NupkgPublishKey, _CurrentNupkgsInfoModel.NugetServerUrl, _CurrentNupkgsInfoModel.IsV3);
+                tbxNugetServerUrl.Text = _CurrentNuGetSettingInfoModel.NugetServerUrl;
+                tbxNupkgPublishKey.Text = _CurrentNuGetSettingInfoModel.NupkgPublishKey;
+
+                var sb = new StringBuilder();
+
+                foreach (var nupkgFullPath in _CurrentNuGetSettingInfoModel.NupkgFullPathList)
+                {
+                    sb.AppendLine(nupkgFullPath);
+                }
+
+                tbxAllNupkgFileFullPath.Text = sb.ToString();
             }
 
         }
 
-        private void RbnV2_OnChecked(object sender, RoutedEventArgs e)
+        private void btnAdd_Click(object sender, RoutedEventArgs e)
         {
-            _CurrentNupkgsInfoModel.IsV3 = false;
-        }
 
-        private void RbnV3_OnChecked(object sender, RoutedEventArgs e)
-        {
-            if (!_CurrentNupkgsInfoModel.IfIsNullOrEmpty())
+            var nuGetSettingWindow = new NuGetSettingWindow(null)
             {
-                _CurrentNupkgsInfoModel.IsV3 = true;
-            }
-        }
-
-        private void SetNuGetConfigControlsIsEnabledStatus(bool isSettings)
-        {
-
-            tbxNugetServerUrl.IsEnabled = isSettings;
-            tbxNupkgKey.IsEnabled = isSettings;
-
-            rbnV2.IsEnabled = isSettings;
-            rbnV3.IsEnabled = isSettings;
-
-            btnSetNuGetConfig.IsEnabled = !isSettings;
-            btnSaveNuGetConfig.IsEnabled = isSettings;
-            btnCancelNuGetConfig.IsEnabled = isSettings;
-
-        }
-
-        private void BtnSetNuGetConfig_OnClick(object sender, RoutedEventArgs e)
-        {
-
-            SetNuGetConfigControlsIsEnabledStatus(true);
-
-            _NugetServerUrlTemp = tbxNugetServerUrl.Text.Trim();
-            _NupkgPublishKeyTemp = tbxNupkgKey.Text.Trim();
-
-        }
-
-        private void BtnSaveNuGetConfig_OnClick(object sender, RoutedEventArgs e)
-        {
-
-            SetNuGetConfigControlsIsEnabledStatus(false);
-
-            _CurrentNupkgsInfoModel.NugetServerUrl = tbxNugetServerUrl.Text.Trim();
-            _CurrentNupkgsInfoModel.NupkgPublishKey = tbxNupkgKey.Text.Trim();
-
-            _CurrentNuGetServerManipulater = new NuGetServerManipulater(_CurrentNupkgsInfoModel.NupkgPublishKey, _CurrentNupkgsInfoModel.NugetServerUrl, _CurrentNupkgsInfoModel.IsV3);
-            //_CurrentNuGetServerManipulater = new NuGetServerManipulater(_CurrentNupkgsInfoModel.NupkgPublishKey, _CurrentNupkgsInfoModel.NugetServerUrl);
-
-        }
-
-        private void BtnCancelNuGetConfig_OnClick(object sender, RoutedEventArgs e)
-        {
-            SetNuGetConfigControlsIsEnabledStatus(false);
-            tbxNugetServerUrl.Text = _NugetServerUrlTemp;
-            tbxNupkgKey.Text = _NupkgPublishKeyTemp;
-        }
-
-
-
-
-        private void btnNupkgFullPath_Click(object sender, RoutedEventArgs e)
-        {
-
-
-            var openFileDialog = new OpenFileDialog
-            {
-                Title = "选择要发布的包",
-                Filter = "Nuget包|" + "*" + GlobalSettings.NUGET_PACKAGE_FILE_SUFFIX,
-                FileName = string.Empty,
-                Multiselect = false,
-                RestoreDirectory = true
+                Owner = this
             };
-            //openFileDialog.Filter = "txt文件|*.txt|rar文件|*.rar|所有文件|*.*";
-            //openFileDialog.FilterIndex = 1;
 
-            if ((bool)openFileDialog.ShowDialog())
+            //nuGetSettingWindow.Show();
+
+            nuGetSettingWindow.ShowDialog();
+
+            if (_CurrentNuGetSettingInfoModel.ID != _CurrentNuGetSettingConfigModel.CurrentNuGetSettingInfoModel.ID)
             {
 
-                string nupkgFileFullPath = openFileDialog.FileName;
-                tbxAddNupkgFullPath.Text = Path.GetDirectoryName(nupkgFileFullPath);
-
-            }
-
-
-        }
-
-        private void btnAddNupkgFullPath_Click(object sender, RoutedEventArgs e)
-        {
-
-            var addNupkgFullPath = tbxAddNupkgFullPath.Text.Trim();
-
-            var addNupkgFullPathLower = addNupkgFullPath.ToLower();
-            var item = _NupkgFullPathSourceList.Where(o => o.ToLower() == addNupkgFullPathLower).FirstOrDefault();
-
-            if (item.IfIsNullOrEmpty())
-            {
-
-                _NupkgFullPathSourceList.Add(addNupkgFullPath);
-
-                var list = _NupkgFullPathSourceList.OrderBy(o => o).ToList();
-
-                _NupkgFullPathSourceList.Clear();
-
-                foreach (var nupkgFullPathSourceItem in list)
+                _NameSourceList.Clear();
+                foreach (var nuGetSettingInfoModel in _CurrentNuGetSettingConfigModel.NuGetSettingList)
                 {
-                    _NupkgFullPathSourceList.Add(nupkgFullPathSourceItem);
+                    _NameSourceList.Add(nuGetSettingInfoModel);
                 }
 
+                _CurrentNuGetSettingInfoModel = _NameSourceList.Where(o => o.ID == _CurrentNuGetSettingConfigModel.CurrentNuGetSettingInfoModel.ID).FirstOrDefault();
+
+                cbxName.SelectedItem = _CurrentNuGetSettingInfoModel;
+
+
             }
-
-
 
         }
 
-        private void BtnBatchImport_OnClick(object sender, RoutedEventArgs e)
+        private void btnUpdate_Click(object sender, RoutedEventArgs e)
         {
 
-            var strBatchImportPaths = tbxBatchImportPaths.Text.Trim();//.ToLower();
-
-            if (!strBatchImportPaths.IfIsNullOrEmpty())
+            if (_CurrentNuGetSettingInfoModel.IfIsNullOrEmpty())
             {
-
-                var batchImportPaths = strBatchImportPaths.Split("\r\n", StringSplitOptions.RemoveEmptyEntries);
-
-                if (!batchImportPaths.IfIsNullOrEmpty())
-                {
-                    var sourceList = _NupkgFullPathSourceList.Distinct().ToList();
-                    foreach (var batchImportPath in batchImportPaths)
-                    {
-                        var batchImportPathDir = File.Exists(batchImportPath) ? Path.GetDirectoryName(batchImportPath) : batchImportPath;
-                        if (Directory.Exists(batchImportPathDir))
-                        {
-                            var sourceItem = sourceList.Where(o => o.ToLower() == batchImportPathDir.ToLower()).FirstOrDefault();
-                            if (sourceItem.IfIsNullOrEmpty())
-                            {
-                                sourceList.Add(batchImportPathDir);
-                            }
-                        }
-                    }
-                    //list.AddRange(paths);
-                    sourceList = sourceList.OrderBy(o => o).ToList();
-                    _NupkgFullPathSourceList.Clear();
-                    foreach (var nupkgFullPathSourceItem in sourceList)
-                    {
-                        _NupkgFullPathSourceList.Add(nupkgFullPathSourceItem);
-                    }
-                }
-
-
+                return;
             }
 
-        }
-
-        private void btnRemoveNupkgFullPath_Click(object sender, RoutedEventArgs e)
-        {
-            var selectedItem = lbxNupkgFullPath.SelectedItem;
-            if (!selectedItem.IfIsNullOrEmpty())
+            var nuGetSettingWindow = new NuGetSettingWindow(_CurrentNuGetSettingInfoModel)
             {
-                _NupkgFullPathSourceList.Remove(selectedItem as string);
-            }
+                Owner = this
+            };
+
+            nuGetSettingWindow.ShowDialog();
+
+            //_NameSourceList.Clear();
+            //foreach (var nuGetSettingInfoModel in _CurrentNuGetSettingConfigModel.NuGetSettingList)
+            //{
+            //    _NameSourceList.Add(nuGetSettingInfoModel);
+            //}
+            cbxName.SelectedItem = null;
+            _CurrentNuGetSettingInfoModel = _NameSourceList.Where(o => o.ID == _CurrentNuGetSettingConfigModel.CurrentNuGetSettingInfoModel.ID).FirstOrDefault();
+            cbxName.SelectedItem = _CurrentNuGetSettingInfoModel;
+
         }
 
-        private void btnSelectAll_Click(object sender, RoutedEventArgs e)
+        private void btnRemove_Click(object sender, RoutedEventArgs e)
         {
 
-            btnUnSelectAll_Click(null, null);
-
-            foreach (var nupkgItemInfoModel in _NupkgsSourceList)
+            if (_CurrentNuGetSettingInfoModel.IfIsNullOrEmpty())
             {
-                lbxNupkgs.SelectedItems.Add(nupkgItemInfoModel);
+                return;
             }
 
-        }
+            _NameSourceList.Remove(_CurrentNuGetSettingInfoModel);
 
-        private void btnUnSelectAll_Click(object sender, RoutedEventArgs e)
-        {
+            _CurrentNuGetSettingInfoModel = _NameSourceList.FirstOrDefault();
 
-            lbxNupkgs.SelectedItems.Clear();
-
-        }
-
-
-        private void LbxNupkgs_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-
-            foreach (var addedItem in e.AddedItems)
-            {
-
-                var nupkgItemInfoModel = addedItem as NupkgItemInfoViewModel;
-                if (!nupkgItemInfoModel.IsEnable)
-                {
-                    lbxNupkgs.SelectedItems.Remove(nupkgItemInfoModel);
-                }
-
-            }
+            cbxName.SelectedItem = _CurrentNuGetSettingInfoModel;
 
         }
-
 
         private async void btnRefreshNupkgs_Click(object sender, RoutedEventArgs e)
         {
@@ -346,10 +211,37 @@ namespace PushNugetPackageTools
 
                 //return;
 
+
+                if (_CurrentNuGetServerManipulater.IfIsNullOrEmpty())
+                {
+                    _CurrentNuGetServerManipulater = new NuGetServerManipulater(_CurrentNuGetSettingInfoModel.NupkgPublishKey, _CurrentNuGetSettingInfoModel.NugetServerUrl);
+                }
+
+
+                await Dispatcher.InvokeAsync(() =>
+                {
+
+                    btnRefreshNupkgs.IsEnabled = false;
+                    _NupkgsSourceList.Clear();
+
+                });
+
+                int count = _CurrentNuGetSettingInfoModel.NupkgFullPathList.Count;
+                int index = 0;
+
                 var list = new List<NupkgItemInfoViewModel>();
 
-                foreach (var nupkgFullPath in _NupkgFullPathSourceList)
+                foreach (var nupkgFullPath in _CurrentNuGetSettingInfoModel.NupkgFullPathList)
                 {
+
+                    index++;
+
+                    await Dispatcher.InvokeAsync(() =>
+                    {
+
+                        btnRefreshNupkgs.Content = string.Format("{0}/{1}", index, count);
+
+                    });
 
                     var lastNupkgFileinfo = Directory.GetFiles(nupkgFullPath, "*" + GlobalSettings.NUGET_PACKAGE_FILE_SUFFIX, SearchOption.TopDirectoryOnly).Select(o => new FileInfo(o)).OrderByDescending(o => o.CreationTimeUtc).FirstOrDefault();
                     if (!lastNupkgFileinfo.IfIsNullOrEmpty())
@@ -401,7 +293,6 @@ namespace PushNugetPackageTools
 
                 //list = list.OrderBy(o => o.ID).ToList();
 
-                _NupkgsSourceList.Clear();
 
                 foreach (var nupkgItemInfoModel in list.OrderBy(o => o.ID))
                 {
@@ -414,23 +305,74 @@ namespace PushNugetPackageTools
 
                 MessageBox.Show(exception.ToString());
             }
+            finally
+            {
+                btnRefreshNupkgs.IsEnabled = true;
+                btnRefreshNupkgs.Content = "刷新";
+            }
 
+        }
+
+        private void btnSelectAll_Click(object sender, RoutedEventArgs e)
+        {
+            btnUnSelectAll_Click(null, null);
+
+            foreach (var nupkgItemInfoModel in _NupkgsSourceList)
+            {
+                lbxNupkgs.SelectedItems.Add(nupkgItemInfoModel);
+            }
+        }
+
+        private void btnUnSelectAll_Click(object sender, RoutedEventArgs e)
+        {
+            lbxNupkgs.SelectedItems.Clear();
+        }
+
+        private void LbxNupkgs_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            foreach (var addedItem in e.AddedItems)
+            {
+
+                var nupkgItemInfoModel = addedItem as NupkgItemInfoViewModel;
+                if (!nupkgItemInfoModel.IsEnable)
+                {
+                    lbxNupkgs.SelectedItems.Remove(nupkgItemInfoModel);
+                }
+
+            }
         }
 
         private async void btnPublishNupkgs_Click(object sender, RoutedEventArgs e)
         {
 
+
             try
             {
-                if (lbxNupkgs.SelectedItems.Count <= 0 || tbxNupkgKey.Text.Trim().IfIsNullOrEmpty())
+
+                if (lbxNupkgs.SelectedItems.Count <= 0)
                 {
                     return;
                 }
 
                 //var publishKey = tbxNupkgKey.Text.Trim();
 
+                int count = lbxNupkgs.SelectedItems.Count;
+                int index = 0;
+
+                await Dispatcher.InvokeAsync(() =>
+                {
+                    btnPublishNupkgs.IsEnabled = false;
+                });
+
                 foreach (var lbxNupkgsSelectedItem in lbxNupkgs.SelectedItems)
                 {
+
+                    index++;
+
+                    await Dispatcher.InvokeAsync(() =>
+                    {
+                        btnPublishNupkgs.Content = string.Format("{0}/{1}", index, count);
+                    });
 
                     var nupkgItemInfoModel = lbxNupkgsSelectedItem as NupkgItemInfoViewModel;
 
@@ -453,10 +395,12 @@ namespace PushNugetPackageTools
             {
                 MessageBox.Show(exception.ToString());
             }
+            finally
+            {
+                btnPublishNupkgs.Content = "发布包";
+                btnPublishNupkgs.IsEnabled = true;
+            }
 
         }
-
-
-
     }
 }

@@ -1,22 +1,42 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
 
   <PropertyGroup>
+
     <OutputType>WinExe</OutputType>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net5.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
     <ApplicationIcon>icon.ico</ApplicationIcon>
+
+
+    <CurrentReleaseNumbers>1.1.0</CurrentReleaseNumbers>
+    <CurrentFileRevision>$([System.DateTime]::Now.ToString("yyyy.MM.dd.HHmm"))</CurrentFileRevision>
+
+    <AssemblyVersion>$(CurrentReleaseNumbers)</AssemblyVersion>
+    <FileVersion>$(CurrentFileRevision)</FileVersion>
+    <Version>$(CurrentReleaseNumbers)</Version>
+
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Lanymy.Common" Version="0.4.3" />
-    <PackageReference Include="Lanymy.Common.Console" Version="0.1.2" />
+
+    <!--<PackageReference Include="Lanymy.Common" Version="0.4.3" />
+    <PackageReference Include="Lanymy.Common.Console" Version="0.1.2" />-->
+    
     <!--<PackageReference Include="NuGet.Credentials" Version="5.4.0-xprivate.60013" />
     <PackageReference Include="NuGet.PackageManagement" Version="5.4.0-xprivate.60013" />
     <PackageReference Include="NuGet.Packaging" Version="5.4.0-xprivate.60013" />
     <PackageReference Include="NuGet.Protocol" Version="5.4.0-xprivate.60013" />-->
-    <PackageReference Include="NuGet.Packaging" Version="5.3.0" />
-    <PackageReference Include="NuGet.Protocol" Version="5.3.0" />
+
+    <!--<PackageReference Include="NuGet.Packaging" Version="5.3.0" />
+    <PackageReference Include="NuGet.Protocol" Version="5.3.0" />-->
+
+    <PackageReference Include="Lanymy.Common.All" Version="0.5.1" />
+
+    <PackageReference Include="NuGet.Packaging" Version="5.8.0" />
+    <PackageReference Include="NuGet.Protocol" Version="5.8.0" />
+
     <!--<PackageReference Include="WindowsAPICodePack-Shell" Version="1.1.1" />-->
+
   </ItemGroup>
 
 </Project>
