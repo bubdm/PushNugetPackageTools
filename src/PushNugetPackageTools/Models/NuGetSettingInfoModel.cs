@@ -18,6 +18,8 @@ namespace PushNugetPackageTools.Models
         public string NugetServerUrl { get; set; } = "https://api.nuget.org/v3/index.json";
         public string NupkgPublishKey { get; set; } = "Nuget API Key";
         public string ScanRootDirectoryFullPath { get; set; }
+        public string MatchKeyword { get; set; }
+
         public List<string> NupkgFullPathList { get; set; } = new List<string>();
         public bool IsClearOldNupkg { get; set; }
         public DateTime CreateDateTime { get; set; }

@@ -70,6 +70,8 @@ namespace PushNugetPackageTools
             tbxNugetServerUrl.Text = _CurrentNuGetSettingInfoModel.NugetServerUrl;
             tbxNupkgPublishKey.Text = _CurrentNuGetSettingInfoModel.NupkgPublishKey;
             cbxClearOldNupkg.IsChecked = _CurrentNuGetSettingInfoModel.IsClearOldNupkg;
+            tbxScanRootDirectoryFullPath.Text = _CurrentNuGetSettingInfoModel.ScanRootDirectoryFullPath;
+            tbxMatchKeyword.Text = _CurrentNuGetSettingInfoModel.MatchKeyword;
 
             foreach (var nupkgFullPath in _CurrentNuGetSettingInfoModel.NupkgFullPathList)
             {
@@ -215,6 +217,7 @@ namespace PushNugetPackageTools
 
             _CurrentNuGetSettingInfoModel.NuGetSettingName = tbxName.Text.Trim();
             _CurrentNuGetSettingInfoModel.ScanRootDirectoryFullPath = tbxScanRootDirectoryFullPath.Text.Trim();
+            _CurrentNuGetSettingInfoModel.MatchKeyword = tbxMatchKeyword.Text.Trim();
             _CurrentNuGetSettingInfoModel.NugetServerUrl = tbxNugetServerUrl.Text.Trim();
             _CurrentNuGetSettingInfoModel.NupkgPublishKey = tbxNupkgPublishKey.Text.Trim();
             _CurrentNuGetSettingInfoModel.IsClearOldNupkg = cbxClearOldNupkg.IsChecked.Value;
