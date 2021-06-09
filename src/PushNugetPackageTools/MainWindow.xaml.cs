@@ -87,6 +87,7 @@ namespace PushNugetPackageTools
             tbxNugetServerUrl.Text = string.Empty;
             tbxNupkgPublishKey.Text = string.Empty;
             tbxAllNupkgFileFullPath.Text = string.Empty;
+            cbxClearOldNupkg.IsChecked = false;
             _NupkgsSourceList.Clear();
 
 
@@ -97,6 +98,7 @@ namespace PushNugetPackageTools
             {
                 tbxNugetServerUrl.Text = _CurrentNuGetSettingInfoModel.NugetServerUrl;
                 tbxNupkgPublishKey.Text = _CurrentNuGetSettingInfoModel.NupkgPublishKey;
+                cbxClearOldNupkg.IsChecked = _CurrentNuGetSettingInfoModel.IsClearOldNupkg;
 
                 var sb = new StringBuilder();
 
@@ -121,6 +123,14 @@ namespace PushNugetPackageTools
             //nuGetSettingWindow.Show();
 
             nuGetSettingWindow.ShowDialog();
+
+            if (_CurrentNuGetSettingInfoModel.IfIsNullOrEmpty())
+            {
+                _CurrentNuGetSettingInfoModel = new NuGetSettingInfoModel
+                {
+                    ID = Guid.NewGuid(),
+                };
+            }
 
             if (_CurrentNuGetSettingInfoModel.ID != _CurrentNuGetSettingConfigModel.CurrentNuGetSettingInfoModel.ID)
             {
@@ -389,12 +399,53 @@ namespace PushNugetPackageTools
 
                     }
 
-
                 }
 
                 //_CurrentNupkgsInfoModel.NupkgPublishKey = publishKey;
 
+                var scanRootDirectoryFullPath = _CurrentNuGetSettingInfoModel.ScanRootDirectoryFullPath;
+
+                if (!scanRootDirectoryFullPath.IfIsNullOrEmpty() && Directory.Exists(scanRootDirectoryFullPath))
+                {
+
+                    var allNupkgFileFullPathList = Directory.GetFiles(scanRootDirectoryFullPath, "*" + GlobalSettings.NUGET_PACKAGE_FILE_SUFFIX, SearchOption.AllDirectories)
+                        .Select(System.IO.Path.GetDirectoryName)
+                        .Distinct()
+                        .OrderBy(o => o)
+                        .ToList();
+
+                    if (allNupkgFileFullPathList.IfIsNullOrEmpty())
+                    {
+                        allNupkgFileFullPathList = new List<string>();
+                    }
+
+                    foreach (var nupkgFileFullPath in allNupkgFileFullPathList)
+                    {
+
+                        var nupkgList = Directory.GetFiles(nupkgFileFullPath, "*" + GlobalSettings.NUGET_PACKAGE_FILE_SUFFIX, SearchOption.TopDirectoryOnly)
+                            .Select(o => new FileInfo(o))
+                            .OrderByDescending(o => o.CreationTime)
+                            .ToList();
+
+                        if (nupkgList.IfIsNullOrEmpty())
+                        {
+                            nupkgList = new List<FileInfo>();
+                        }
+
+                        nupkgList.RemoveAt(0);
+
+                        foreach (var fileInfo in nupkgList)
+                        {
+                            fileInfo.Delete();
+                        }
+
+                    }
+
+                }
+
+
                 MessageBox.Show("发布完成");
+
             }
             catch (Exception exception)
             {

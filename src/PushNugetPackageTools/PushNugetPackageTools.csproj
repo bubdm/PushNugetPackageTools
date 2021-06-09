@@ -8,7 +8,7 @@
     <ApplicationIcon>icon.ico</ApplicationIcon>
 
 
-    <CurrentReleaseNumbers>1.1.0</CurrentReleaseNumbers>
+    <CurrentReleaseNumbers>1.2.0</CurrentReleaseNumbers>
     <CurrentFileRevision>$([System.DateTime]::Now.ToString("yyyy.MM.dd.HHmm"))</CurrentFileRevision>
 
     <AssemblyVersion>$(CurrentReleaseNumbers)</AssemblyVersion>
